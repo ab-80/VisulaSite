@@ -1,7 +1,4 @@
 Django==2.2.17
-pyodbc==3.0.10
-django-pyodbc-azure==1.8.3.0
-
 beautifulsoup4==4.9.3
 bs4==0.0.1
 pip==20.1.1
@@ -26,3 +23,4 @@ six==1.15.0
 azure-core==1.9.0
 azure-storage-blob==12.6.0
 azure-common==1.1.26
+whitenoise==5.2.0
