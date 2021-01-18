@@ -1,0 +1,81 @@
+.jumbotron {
+    color: RGB(27,27,27);
+    background-color: RGB(242, 243, 244);
+}
+
+
+.overview-table, overview-table-th {
+    color: RGB(242, 243, 244);
+    border: none;
+    width: 100%;
+    text-align: left;
+    text-decoration: underline;
+    text-decoration-color: rgba(153, 102, 255, 1);
+}
+
+
+.basics-table {
+    width: 100%;
+    border: none;
+}
+.radar-div {
+    border: none;
+    margin-left: 20px;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+.basics-left {
+    width: 50%;
+    vertical-align: top;
+}
+.basics-right {
+    vertical-align: top;
+    border: none;
+}
+
+
+.tickerButton {
+    border-color: rgba(153, 102, 255, 1);
+}
+
+
+.ticker {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom-color: rgba(153, 102, 255, 1);
+}
+
+.bottom-table {
+    width: 100%;
+}
+.bottom-left, .bottom-right {
+    width: 50%;
+}
+
+.bottom-left-div, .bottom-right-div {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.bottom-left-div {
+    margin-right: 60px;
+}
+
+.bottom-right-div {
+    margin-left: 60px;
+    margin-right: 20px;
+}
+
+.chart {
+    display: block;
+}
+
+
+.lineChart-div{
+    height: 250px;
+}
+
