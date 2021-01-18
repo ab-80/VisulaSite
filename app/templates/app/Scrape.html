@@ -1,0 +1,250 @@
+﻿{% extends "app/layout.html" %}
+
+{% block content %}
+
+<head>
+    <link rel="stylesheet" href="site.css">
+    <title>Visula Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js" type="text/javascript"></script>
+</head>
+
+
+<div class="jumbotron">
+    <p class="lead">Public Stock Visualizer and Evaluator</p>
+    <form action={% url 'scrape' %} method="post" name="form">{% csrf_token %}
+        <i class="fa fa-search" aria-hidden="true" style="color:rgba(153, 102, 255, 1)"></i>
+        <input type="text" name="ticker" class="ticker" placeholder="Ticker" maxlength="6"/>
+        <input type="submit" value="Analyze" name="mybtn" class="tickerButton"/>
+    </form>
+</div>
+
+
+<table class="overview-table">
+    <tr>
+        <th class="overview-table-th">
+            <h2>Company Profile</h2>
+        </th>
+    </tr>
+</table>
+
+<table class="basics-table">
+    <tr>
+        <td class="basics-left">
+            <br />
+            <h3>{{name}}</h3>
+            <h3>{{price}}</h3>
+            <h3>{{daily_change}}</h3>
+            <h3>{{marketCap}}</h3>
+            <h3>{{cashflow}}</h3>
+        </td>
+        <td class="basics-right">
+            <div class="radar-div">
+                <canvas id="radarChart" class="chart"></canvas>
+            </div>
+        </td>
+    </tr>
+</table>
+
+
+<br /><br /><br /><br />
+
+<div class="lineChart-div" style="">
+    <canvas class="chart" id="lineChartRelative" style="height:200px; width:800px"></canvas>
+</div>
+
+
+<table class="bottom-table">
+    <tr>
+        <td class="bottom-left">
+            <div class="bottom-left-div">
+                <canvas class="bottomChart" id="barChart"></canvas>
+            </div>
+        </td>
+        <td class="bottom-right">
+            <div class="bottom-right-div">
+                <canvas class="bottomChart" id="debtChart"></canvas>
+            </div>
+        </td>
+    </tr>
+</table>
+    
+
+
+
+<script>
+    var bar = document.getElementById('barChart');
+
+    var myChart = new Chart(bar, {
+    type: 'bar',
+        data: {
+            labels: ['2016', '2017', '2018', '2019'],
+            datasets: [{
+                label: 'Gross Profit by Year ($)',
+                data: {{ profit }},
+            backgroundColor: [
+                'rgba(153, 102, 255, .4)',
+                'rgba(153, 102, 255, .4)',
+                'rgba(153, 102, 255, .4)',
+                'rgba(153, 102, 255, .4)'
+                //'rgba(153, 102, 255, 0.2)',
+                //'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(153, 102, 255, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(153, 102, 255, 1)',
+                //'rgba(153, 102, 255, 1)',
+                //'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+    responsive: true,
+    legend: {
+        labels: {
+            fontColor: "white",
+        }
+    },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                    fontColor: "white"
+                }
+            }],
+            xAxes: [{
+                ticks: {
+                    fontColor: "white",
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+
+
+    var line2 = document.getElementById("lineChartRelative").getContext('2d');
+
+
+    var myChart = new Chart(line2, {
+        type: 'line',
+        data: {
+            labels: ["2 Weeks Ago", " ", " ", " ", " ", " ", " ", "1 Week Ago", " ", " ", " "," "," "," ","Current"],
+            datasets: [{
+                label: 'Share Price ($), Relative Graph',
+                data: {{ two_weeks }},
+                fill: true,
+                borderColor: "rgba(153, 102, 255, 1)",
+                backgroundColor: "rgba(153, 102, 255, 0.4)",
+                borderWidth: 2,
+                pointRadius: 0,
+            }]},
+        options: {
+    responsive: true,
+    legend: {
+        labels: {
+            fontColor: "white",
+        }
+    },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    fontColor: "white"
+                }
+            }],
+            xAxes: [{
+                ticks: {
+                    fontColor: "white",
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+    
+    var rad = document.getElementById("radarChart");
+
+    var myChart = new Chart(rad, {
+        type: 'radar',
+        data: {
+            labels: ["Financials", "Growth", "Momentum", "Value", ],
+            datasets: [{
+                label: "Overall Grade",
+                data: {{overall_grade}},
+                backgroundColor: "rgba(153, 102, 255, .5)",
+                borderColor: "rgba(153, 102, 255, 1)",
+                fill: true,
+            }],
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    label: {
+                        fontColor: "white"
+                            }
+                        },
+                    }
+        }
+    });
+
+
+    var bar2 = document.getElementById('debtChart');
+
+    var myChart = new Chart(bar2, {
+    type: 'bar',
+        data: {
+            labels: ['Total Debt', 'Total Cash'],
+            datasets: [{
+                label: 'Total Debt vs. Total Cash ($)',
+                data: {{ cash_debt }},
+            backgroundColor: [
+                'rgba(153, 102, 255, .4)',
+                'rgba(153, 102, 255, .4)',
+                //'rgba(153, 102, 255, .4)',
+                //'rgba(153, 102, 255, .4)'
+                //'rgba(153, 102, 255, 0.2)',
+                //'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(153, 102, 255, 1)',
+                'rgba(153, 102, 255, 1)',
+                //'rgba(153, 102, 255, 1)',
+                //'rgba(153, 102, 255, 1)',
+                //'rgba(153, 102, 255, 1)',
+                //'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+    responsive: true,
+    legend: {
+        labels: {
+            fontColor: "white",
+        }
+    },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                    fontColor: "white"
+                }
+            }],
+            xAxes: [{
+                ticks: {
+                    fontColor: "white",
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+</script>
+{% endblock %}
+
+
