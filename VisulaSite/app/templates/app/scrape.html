@@ -15,7 +15,7 @@
     <p class="lead">Public Stock Visualizer and Evaluator</p>
     <form action={% url 'scrape' %} method="post" name="form">{% csrf_token %}
         <i class="fa fa-search" aria-hidden="true" style="color:rgba(153, 102, 255, 1)"></i>
-        <input type="text" name="ticker" class="ticker" placeholder="Ticker" maxlength="6"/>
+        <input type="text" name="ticker" class="ticker" placeholder="Ticker" maxlength="5"/>
         <input type="submit" value="Analyze" name="mybtn" class="tickerButton"/>
     </form>
 </div>
