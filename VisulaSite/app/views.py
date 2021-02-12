@@ -70,39 +70,38 @@ def scrape(request):
             ticker = tickerClass.cleaned_data['ticker']
 
 
-    #setting up BeautifulSoup for the key-statistics page
-    url1 = ("https://finance.yahoo.com/quote/" + ticker + "/key-statistics?p=" + ticker)
-    http = urllib3.PoolManager()                      
-    site = http.request('GET', url1)                  
-    soup = BeautifulSoup(site.data, 'html.parser')
+        #setting up BeautifulSoup for the key-statistics page
+    try:
+        url1 = ("https://finance.yahoo.com/quote/" + ticker + "/key-statistics?p=" + ticker)
+        http = urllib3.PoolManager()                      
+        site = http.request('GET', url1)                  
+        soup = BeautifulSoup(site.data, 'html.parser')
 
     
-    #scraping for price and extracting text
-    try:
+        #scraping for price and extracting text
         price = soup.find('span', {"class" : "Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(ib)"}).text
         po = "$" + price + " per share"
+
+
+        #scraping for the daily change and extracting text
+        dailyChange = soup.find('span', {"class" : 'Trsdu(0.3s) Fw(500) Pstart(10px) Fz(24px) C($positiveColor)'})
+        if dailyChange is None:
+            dailyChange = soup.find('span', {"class" : 'Trsdu(0.3s) Fw(500) Pstart(10px) Fz(24px) C($negativeColor)'})
+    
+        if dailyChange is None:
+            dco = ""
+        else:
+            dco = dailyChange.text + " since trading last closed"
+
+
+        #scraping for the stock name and extracting text
+        stockName = soup.find('h1', {"class" : "D(ib) Fz(18px)"})
+        if stockName is None:
+            sn = ""
+        else:
+            sn = stockName.text
     except:
         return redirect('/error')
-
-
-    #scraping for the daily change and extracting text
-    dailyChange = soup.find('span', {"class" : 'Trsdu(0.3s) Fw(500) Pstart(10px) Fz(24px) C($positiveColor)'})
-    if dailyChange is None:
-        dailyChange = soup.find('span', {"class" : 'Trsdu(0.3s) Fw(500) Pstart(10px) Fz(24px) C($negativeColor)'})
-    
-    if dailyChange is None:
-        dco = ""
-    else:
-        dco = dailyChange.text + " since trading last closed"
-
-
-    #scraping for the stock name and extracting text
-    stockName = soup.find('h1', {"class" : "D(ib) Fz(18px)"})
-    if stockName is None:
-        sn = ""
-    else:
-        sn = stockName.text
-
 
     #method to turn abbreviated number+letter into a full number
     #this method is used to find market capitalization and to find the debt+chash info
@@ -125,58 +124,61 @@ def scrape(request):
 
 
     #scraping for market capitalization and extracting text
-    marketCap = soup.find('td', {'class' : "Ta(c) Pstart(10px) Miw(60px) Miw(80px)--pnclg Bgc($lv1BgColor) fi-row:h_Bgc($hoverBgColor)"}).text
-    capAssignment = ""
+    try:
+        marketCap = soup.find('td', {'class' : "Ta(c) Pstart(10px) Miw(60px) Miw(80px)--pnclg Bgc($lv1BgColor) fi-row:h_Bgc($hoverBgColor)"}).text
+        capAssignment = ""
 
 
-    #calculating actual market cap using the fullNumber def made earlier
-    totalCap = fullNumber(marketCap)
+        #calculating actual market cap using the fullNumber def made earlier
+        totalCap = fullNumber(marketCap)
 
 
-    #assigning market cap term
-    if totalCap > 200000000000:
-        capAssignment = "Mega Cap"
-    elif totalCap > 10000000000 and totalCap <= 200000000000:
-        capAssignment = "Large Cap"
-    elif totalCap > 2000000000 and totalCap <= 10000000:
-        capAssignment = "Mid Cap"
-    else:
-        capAssignment = "Small Cap"
+        #assigning market cap term
+        if totalCap > 200000000000:
+            capAssignment = "Mega Cap"
+        elif totalCap > 10000000000 and totalCap <= 200000000000:
+            capAssignment = "Large Cap"
+        elif totalCap > 2000000000 and totalCap <= 10000000:
+            capAssignment = "Mid Cap"
+        else:
+            capAssignment = "Small Cap"
 
 
-    #this variable is what gets diplayed on the scrape.html page
-    mkt_cap = capAssignment + ", with $" + marketCap + " in market capitalization"
+        #this variable is what gets diplayed on the scrape.html page
+        mkt_cap = capAssignment + ", with $" + marketCap + " in market capitalization"
 
 
-    #getting total cash and total debt and storing them in a
-    #2 element list to be diplayed in a chart
-    allTables = soup.find_all('table', {'class' : "W(100%) Bdcl(c)"})
-    cashDebtTable = allTables[7].find_all('tr')
-    totalCash = cashDebtTable[0].find('td', {'class' : "Fw(500) Ta(end) Pstart(10px) Miw(60px)"}).text
-    totalDebt = cashDebtTable[2].find('td', {'class' : "Fw(500) Ta(end) Pstart(10px) Miw(60px)"}).text
+        #getting total cash and total debt and storing them in a
+        #2 element list to be diplayed in a chart
+        allTables = soup.find_all('table', {'class' : "W(100%) Bdcl(c)"})
+        cashDebtTable = allTables[7].find_all('tr')
+        totalCash = cashDebtTable[0].find('td', {'class' : "Fw(500) Ta(end) Pstart(10px) Miw(60px)"}).text
+        totalDebt = cashDebtTable[2].find('td', {'class' : "Fw(500) Ta(end) Pstart(10px) Miw(60px)"}).text
 
-    #this variable gets displayed in scrape.html in the cash vs debt chart
-    cashDebtList = [float(fullNumber(totalDebt)),float(fullNumber(totalCash))]
-    list(cashDebtList)
+        #this variable gets displayed in scrape.html in the cash vs debt chart
+        cashDebtList = [float(fullNumber(totalDebt)),float(fullNumber(totalCash))]
+        list(cashDebtList)
     
     
-    #opening BeautifulSoup for the financials page                               
-    url2 = ("https://finance.yahoo.com/quote/" + ticker + "/financials?p=" + ticker)
-    http2 = urllib3.PoolManager()                       
-    site2 = http2.request('GET', url2)                  
-    soup2 = BeautifulSoup(site2.data, 'html.parser')
-
+        #opening BeautifulSoup for the financials page                               
+        url2 = ("https://finance.yahoo.com/quote/" + ticker + "/financials?p=" + ticker)
+        http2 = urllib3.PoolManager()                       
+        site2 = http2.request('GET', url2)                  
+        soup2 = BeautifulSoup(site2.data, 'html.parser')
+    except:
+        return redirect('/error')
 
     #method to extract yearly data
     def yearly(itemClass, element):
-        allDivs = soup2.find_all('div', {'class' : itemClass})
-        target = allDivs[element]
-        output = target.find('span').text
-        cleanedOutput = output.replace(",","")
-        cleanedOutput = float(cleanedOutput)
-
-        return cleanedOutput
-
+        try:
+            allDivs = soup2.find_all('div', {'class' : itemClass})
+            target = allDivs[element]
+            output = target.find('span').text
+            cleanedOutput = output.replace(",","")
+            cleanedOutput = float(cleanedOutput)
+            return cleanedOutput
+        except:
+            return redirect('/error')
 
     #getting last four years of gross profit
 
@@ -198,18 +200,20 @@ def scrape(request):
     except:
         bar16 = 0
         
-    grossProfit.append(float(bar16))
-    grossProfit.append(float(bar17))
-    grossProfit.append(float(bar18))
-    grossProfit.append(float(bar19))
+    try:
+        grossProfit.append(float(bar16))
+        grossProfit.append(float(bar17))
+        grossProfit.append(float(bar18))
+        grossProfit.append(float(bar19))
 
 
-    #opening BeautifulSoup for the history page                               
-    url3 = ("https://finance.yahoo.com/quote/" + ticker + "/history?p=" + ticker)
-    http3 = urllib3.PoolManager()                       
-    site3 = http3.request('GET', url3)                  
-    soup3 = BeautifulSoup(site3.data, 'html.parser')
-
+        #opening BeautifulSoup for the history page                               
+        url3 = ("https://finance.yahoo.com/quote/" + ticker + "/history?p=" + ticker)
+        http3 = urllib3.PoolManager()                       
+        site3 = http3.request('GET', url3)                  
+        soup3 = BeautifulSoup(site3.data, 'html.parser')
+    except:
+        return redirect('/error')
 
     #making a function to get last 2 weeks of data
     def last2():
@@ -217,9 +221,7 @@ def scrape(request):
         fin = list(fin)
         table = soup3.find('table', {'class' : "W(100%) M(0)"})
         trs = table.find_all('tr')
-
         index = 1
-
         while index < 16:
             tds = []
             list(tds)
@@ -294,7 +296,7 @@ def scrape(request):
 
     if firstTwo > secondTwo:
         growthScore = 1
-    elif secondTwo / firstTwo > 1 and secondTwo / firstTwo <= 1.2:
+    elif secondTwo / firstTwo > 0 and secondTwo / firstTwo <= 1.2:
         growthScore = 2
     elif secondTwo / firstTwo > 1.2 and secondTwo / firstTwo <= 1.4:
         growthScore = 3
@@ -311,7 +313,7 @@ def scrape(request):
 
     if lastDay < firstDay:
         momentumScore = 1
-    elif lastDay / firstDay > 1 and lastDay / firstDay <= 1.05:
+    elif lastDay / firstDay > 0 and lastDay / firstDay <= 1.05:
         momentumScore = 2
     elif lastDay / firstDay > 1.05 and lastDay / firstDay <= 1.1:
         momentumScore = 3

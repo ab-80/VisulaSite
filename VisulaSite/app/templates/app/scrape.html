@@ -165,13 +165,30 @@
                 borderColor: "rgba(153, 102, 255, 1)",
                 fill: true,
             }],
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-
-            }
+            options: radarOptions//{
+                //responsive: true,
+                //maintainAspectRatio: false,
+                //scale: {
+                    //ticks: {
+                        //beginAtZero: true,
+                        //min: 0,
+                        //max: 0,
+                        //stepSize: 1
+                    //}
+                //}
+            //}
         }
     });
+
+  var radarOptions = {
+    scale: {
+        ticks: {
+            beginAtZero: true,
+            min: 0,
+            stepSize: 1
+            }
+        }
+  };
 
 
     var bar2 = document.getElementById('debtChart');
